@@ -1,0 +1,131 @@
+template<class T, T F(T a, T b)> class range_query_DST{ //dynamic segment tree
+    private:
+    inline long long mid(long long a, long long b){
+        return (a+b)>>1;
+    }
+    class node{
+        public:
+        T val;
+        long long L;
+        long long R;
+        node* left;
+        node* right;
+        node(T a, long long b, long long c) : val(a), L(b), R(c), left(nullptr), right(nullptr){
+        }
+        node(T a, long long b, long long c, node* d, node* e) : val(a), L(b), R(c), left(d), right(e){
+        }
+    };
+    class reference_proxy {
+        range_query_DST* tree;
+        long long index;
+    public:
+        reference_proxy(range_query_DST* t, long long i) : tree(t), index(i) {}
+        reference_proxy& operator=(const T& val) {
+            tree->renew(index, val);
+            return *this;
+        }
+        reference_proxy& operator+=(const T& val) {
+            tree->transform(index, [&val](T a){return F(a, val);});
+            return *this;
+        }
+        operator T() const {
+            return tree->get_value(index);
+        }
+    };
+    node* root;
+    long long bound_L;
+    long long bound_R;
+    T id;
+    void break_down(node* ptr){
+        long long m = mid(ptr->L, ptr->R);
+        ptr->left = new node(id, ptr->L, m);
+        ptr->right = new node(id, m+1, ptr->R);
+    }
+    public:
+    range_query_DST(long long l, long long r, const T& ID) : id(ID){
+        root = new node(ID, l, r);
+    }
+    T S(long long a, long long b){
+        if(a>b){
+            throw std::logic_error("Wrong summation range");
+        }
+        function<T(node*, long long, long long)> solve=[&](node* ptr, long long index_l, long long index_r){
+            if(!ptr->left){
+                if(ptr->L == ptr->R){
+                    return ptr->val;
+                }
+                return id;
+            }
+            if(ptr->L==index_l && ptr->R==index_r){
+                return ptr->val;
+            }
+            long long m=mid(ptr->L, ptr->R);
+            if(index_l>m){
+                return solve(ptr->right, index_l, index_r);
+            }
+            if(index_r<=m){
+                return solve(ptr->left, index_l, index_r);
+            }
+            return F(solve(ptr->left, index_l, m), solve(ptr->right, m+1, index_r) );
+        };
+        return solve(root, a, b);
+    }
+    void renew(long long index, T new_val){
+        function<void(node*)> renew_node=[&](node* ptr){
+            if(ptr->L==ptr->R){
+                ptr->val=new_val;
+                return;
+            }
+            if(!ptr->left) break_down(ptr);
+            long long m = mid(ptr->L, ptr->R);
+            if(index<=m){
+                renew_node(ptr->left);
+            }
+            else{
+                renew_node(ptr->right);
+            }
+            ptr->val=F(ptr->left->val, ptr->right->val);
+        };
+        renew_node(root);
+    }
+    template<typename Func>
+    void transform(int index, Func transformer){
+        function<void(node*)> renew_node=[&](node* ptr){
+            if(ptr->L == ptr->R){
+                ptr->val = transformer(ptr->val);
+                return;
+            }
+            if(!ptr->left) {
+                break_down(ptr);
+            }
+            int m = ptr->left->R;
+            if(index <= m){
+                renew_node(ptr->left);
+            }
+            else{
+                renew_node(ptr->right);
+            }
+            ptr->val = F(ptr->left->val, ptr->right->val);
+        };
+        renew_node(root);
+    }
+    T get_value(long long index){
+        function<T(node*)> get_val=[&](node* ptr){
+            if(ptr->L==ptr->R){
+                return ptr->val;
+            }
+            if(!ptr->left) return id;
+            long long m=mid(ptr->L, ptr->R);
+            if(index<=m){
+                return get_val(ptr->left);
+            }
+            else{
+                return get_val(ptr->right);
+            }
+        };
+        return get_val(root);
+    }
+    reference_proxy operator [](long long index){
+        return reference_proxy(this, index);
+    }
+}; //tester: ABC 403G

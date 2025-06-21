@@ -1,0 +1,191 @@
+template<class T, T F(T a, T b)> class range_query_ST{ //ST: segment tree
+    private:
+    static inline int mid(int a, int b){
+        return (a+b)>>1;
+    }
+    class node{
+        public:
+        T val;
+        int L;
+        int R;
+        node* left;
+        node* right;
+        node(T a, int b, int c) : val(a), L(b), R(c), left(nullptr), right(nullptr){
+        }
+        node(T a, int b, int c, node* d, node* e) : val(a), L(b), R(c), left(d), right(e){
+        }
+    };
+    class reference_proxy {
+        range_query_ST* tree;
+        long long index;
+    public:
+        reference_proxy(range_query_ST* t, long long i) : tree(t), index(i) {}
+        reference_proxy& operator=(const T& val) {
+            tree->renew(index, val);
+            return *this;
+        }
+        reference_proxy& operator+=(const T& val) {
+            tree->transform(index, [&val](T a){return F(a, val);});
+            return *this;
+        }
+        operator T() const {
+            return tree->get_value(index);
+        }
+    };
+    class BS_result {
+        T val;
+        int index;
+        public:
+        BS_result(int ind, const T& v): val(v), index(ind) {}
+        operator bool() {
+            return index >= 0;
+        }
+        operator int() {
+            return index;
+        }
+        T get_val() {
+            return val;
+        }
+    };
+    node* root;
+    public:
+    template<class U>
+    range_query_ST(const vector<U>& a){
+        function<node*(int, int)> initialize=[&](int l, int r){
+            if(l==r){
+                return new node(T(a[l]), l, r);
+            }
+            node* ptr_l=initialize(l, mid(l, r));
+            node* ptr_r=initialize(mid(l, r)+1, r);
+            return new node(F(ptr_l->val, ptr_r->val), l, r, ptr_l, ptr_r);
+        };
+        root=initialize(0, a.size()-1);
+    }
+    T S(int a, int b){
+        if(a>b){
+            throw std::logic_error("Wrong summation range");
+        }
+        function<T(node*, int)> solve_right_aligned = [&](node* ptr, int index_l) {
+            if(ptr->L == index_l) {
+                return ptr->val;
+            }
+            int m = ptr->left->R;
+            if(index_l > m) {
+                return solve_right_aligned(ptr->right, index_l);
+            } else {
+                return F(solve_right_aligned(ptr->left, index_l), ptr->right->val);
+            }
+        };
+        function<T(node*, int)> solve_left_aligned = [&](node* ptr, int index_r) {
+            if(ptr->R == index_r) {
+                return ptr->val;
+            }
+            int m = ptr->left->R;
+            if(index_r > m) {
+                return F(ptr->left->val, solve_left_aligned(ptr->right, index_r));
+            } else {
+                return solve_left_aligned(ptr->left, index_r);
+            }
+        };
+        function<T(node*, int, int)> solve=[&](node* ptr, int index_l, int index_r){
+            if(ptr->L == index_l && ptr->R == index_r){
+                return ptr->val;
+            }
+            int m = ptr->left->R;
+            if(index_l > m){
+                return solve(ptr->right, index_l, index_r);
+            }
+            if(index_r <= m){
+                return solve(ptr->left, index_l, index_r);
+            }
+            return F(solve_right_aligned(ptr->left, index_l), solve_left_aligned(ptr->right, index_r));
+        };
+        return solve(root, a, b);
+    }
+    void renew(int index, T new_val){
+        function<void(node*)> renew_node = [&](node* ptr){
+            if(ptr->L == ptr->R){
+                ptr->val = new_val;
+                return;
+            }
+            int m = ptr->left->R;
+            if(index <= m){
+                renew_node(ptr->left);
+            }
+            else{
+                renew_node(ptr->right);
+            }
+            ptr->val = F(ptr->left->val, ptr->right->val);
+        };
+        renew_node(root);
+    }
+    template<typename Func>
+    void transform(int index, Func transformer){
+        function<void(node*)> renew_node=[&](node* ptr){
+            if(ptr->L == ptr->R){
+                ptr->val = transformer(ptr->val);
+                return;
+            }
+            int m = ptr->left->R;
+            if(index <= m){
+                renew_node(ptr->left);
+            }
+            else{
+                renew_node(ptr->right);
+            }
+            ptr->val = F(ptr->left->val, ptr->right->val);
+        };
+        renew_node(root);
+    }
+    T get_value(int index){
+        auto ptr = root;
+        while(ptr->L != ptr->R){
+            int m = ptr->left->R;
+            if(index <= m) ptr = ptr->left;
+            else ptr = ptr->right;
+        }
+        return ptr->val;
+    }
+    int size(){
+        return root->R - root->L + 1;
+    }
+    reference_proxy operator [](int index){
+        return reference_proxy(this, index);
+    }
+    template<typename J>
+    BS_result first_true(J predicate, int index_from = 0) {
+        function<BS_result(int, node*)> first_true_solver = [&](int index, node* ptr){
+            if(ptr->L == ptr->R) {
+                if(!predicate(ptr->val)) {
+                    return BS_result(-1, ptr->val);
+                } else {
+                    return BS_result(index, ptr->val);
+                }
+            }
+            if(ptr->left->R < index) {
+                return first_true_solver(index, ptr->right);
+            }
+            BS_result left_hint = first_true_solver(index, ptr->left);
+            if(left_hint) return left_hint;
+            T base = left_hint.get_val();
+            T potential = F(base, ptr->right->val);
+            if(!predicate(potential)) return BS_result(-1, potential);
+            node* locator = ptr->right;
+            while(locator->L != locator->R) {
+                T new_base = F(base, locator->left->val);
+                if(!predicate(new_base)) {
+                    base = new_base;
+                    locator = locator->right;
+                } else {
+                    locator = locator->left;
+                }
+            }
+            return BS_result(locator->L, F(base, locator->val));
+        };
+        return first_true_solver(index_from, root);
+    }
+    BS_result lower_bound(const T& target, int index_from = 0) {
+        return first_true([&](T x){return x >= target;}, index_from);
+    } //tester: LeetCode 2286
+    //TODO: upper_bound
+}; //tester: CSES Dynamic Range Sum Queries, CSES Prefix Sum Queries

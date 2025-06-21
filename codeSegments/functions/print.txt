@@ -1,0 +1,30 @@
+// 處理一般的一維 vector<T>
+template <typename T>
+void print(const std::vector<T>& vec, string delimiter=" ") {
+    for (const auto& elem : vec) {
+        std::cout << elem << delimiter;
+    }
+    std::cout << '\n';
+}
+
+// 處理二維 vector<vector<T>>
+template <typename T>
+void print(const std::vector<std::vector<T>>& vec, string delimiter=" ") {
+    for (const auto& inner : vec) {
+        print(inner, delimiter); // 呼叫上一個 print 處理 vector<T>
+    }
+}
+
+template<typename T, typename U>
+void print(const std::pair<T, U>& p, string delimiter=" ") {
+    cout << p.first << delimiter << p.second << endl;
+}
+
+template<typename T, typename U>
+void print(const std::vector<std::pair<T, U>>& vec, string delimiter=" ") {
+    for (const auto& inner : vec) {
+        print(inner, delimiter);
+    }
+    cout << endl;
+}
+

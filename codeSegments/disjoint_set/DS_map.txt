@@ -1,0 +1,66 @@
+template<class T> class DS_map{ //每個 set 是一個 key，有其對應 type-T 的 value
+    int N;
+    int* arr;
+    int* deg;
+    int ancestor(int a){
+        if(a==arr[a]) return a;
+        return arr[a]=ancestor(arr[a]); //compression
+    }
+    vector<T> dic;
+    public:
+    DS_map(int n, const vector<T>& v) : dic(v){
+        N=n;
+        arr=new int[n];
+        deg=new int[n];
+        iota(arr, arr+n, 0);
+        fill(deg, deg+n, 1);
+    }
+    DS_map(int n, const function<T(int)>& f){ //用function 初始化
+        N=n;
+        arr=new int[n];
+        deg=new int[n];
+        iota(arr, arr+n, 0);
+        fill(deg, deg+n, 1);
+        dic.reserve(n);
+        for(int i=0;i<n;++i){
+            dic.push_back(f(i));
+        }
+    }
+    bool sameset(int a, int b){
+        int pa=ancestor(a);
+        int pb=ancestor(b);
+        return pa==pb;
+    }
+    bool merge(int a, int b){ //回傳是否有效merge兩個原本不同的，若有則回傳true, merge 後的 set value 取 b 的 set value
+        int pa=ancestor(a);
+        int pb=ancestor(b);
+        if(pa!=pb){
+            if(deg[pa]<deg[pb]){
+                arr[pa]=pb;
+                deg[pb]+=deg[pa];
+            }
+            else{
+                arr[pb]=pa;
+                deg[pa]+=deg[pb];
+            }
+            dic[pa]=dic[pb];
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    int get_ancestor(int a){
+        return ancestor(a);
+    }
+    int get_degree(int a){
+        return deg[ancestor(a)];
+    }
+    T get_value(int a){
+        return dic[ancestor(a)];
+    }
+    void renew(int a, const T& val){
+        dic[ancestor(a)]=val;
+    }
+    //tester: LeetCode 407, LeetCode 3108
+};

@@ -1,0 +1,68 @@
+template<class T, T ADD(T a, T b), T SUB(T a, T b)> class DS_vector{ 
+    int N;
+    int* arr;
+    int* deg;
+    T* val; //val[a]: arr[a]至a的向量
+    T identity;
+    pair<int, T> ancestor(int a){ //回傳{祖先, 祖先至a的向量}
+        if(a==arr[a]) return {a, identity};
+        auto P=ancestor(arr[a]);
+        return {arr[a]=P.first, val[a]=ADD(P.second, val[a])}; //compression
+    }
+    
+    public:
+    DS_vector(int n, const T& ID){
+        N=n;
+        arr=new int[n];
+        deg=new int[n];
+        val=new T[n];
+        identity=ID;
+        iota(arr, arr+n, 0);
+        fill(deg, deg+n, 1);
+        fill(val, val+n, ID);
+    }
+    bool sameset(int a, int b){
+        auto pa=ancestor(a);
+        auto pb=ancestor(b);
+        return pa.first==pb.first;
+    }
+    bool merge(int a, int b, const T& diff){ //回傳是否有效merge兩個原本不同的，若有則回傳true
+        //diff為a->b向量
+        auto pa=ancestor(a);
+        auto pb=ancestor(b);
+        //pa->pb=pa->a + a->b - pb->b
+        if(pa.first!=pb.first){
+            if(deg[pa.first]<deg[pb.first]){
+                val[pa.first]=SUB(SUB(pb.second, diff), pa.second);
+                arr[pa.first]=pb.first;
+                deg[pb.first]+=deg[pa.first];
+            }
+            else{
+                val[pb.first]=SUB(ADD(pa.second, diff), pb.second);
+                arr[pb.first]=pa.first;
+                deg[pa.first]+=deg[pb.first];
+            }
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    pair<bool, T> d(int a, int b){ //求a->b向量，若無法求出則第一答案為false
+        auto pa=ancestor(a);
+        auto pb=ancestor(b);
+        if(pa.first!=pb.first){
+            return {false, identity};
+        }
+        else{
+            return {true, SUB(pb.second, pa.second)};
+        }
+    }
+    pair<int, T> get_ancestor(int a){
+        return ancestor(a);
+    }
+    int get_degree(int a){
+        return deg[ancestor(a).first];
+    }
+    //tested by: LeetCode 399, ABC 320D, ABC 328F, ARC 188C, ABC 396E
+};

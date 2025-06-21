@@ -1,0 +1,208 @@
+template <class T> class my_multiset{
+    template <class U> class BST_node{
+        public:
+        U val;
+        int multi;
+        int height;
+        int order; //子樹的大小
+        BST_node<U>* left;
+        BST_node<U>* right;
+        BST_node(U& v): val(v), multi(1), height(1), order(1), left(nullptr), right(nullptr){
+        }
+        void print(){ //注意型別U要可以輸出
+            cout << "val=" << val << endl;
+            cout << "multi=" << multi << endl;
+            cout << "height=" << height << endl;
+            cout << "order=" << order << endl;
+            if(left) left->print();
+            if(right) right->print();
+        }
+        int get_left_height(){
+            if(left) return left->height;
+            return 0;
+        }
+        int get_right_height(){
+            if(right) return right->height;
+            return 0;
+        }
+        void renew(){ //更新height與order，條件為所有子節點已經有正確的height與order
+            int height_l, order_l, height_r, order_r;
+            if(left){
+                height_l=left->height;
+                order_l=left->order;
+            }
+            else{
+                height_l=0;
+                order_l=0;
+            }
+            if(right){
+                height_r=right->height;
+                order_r=right->order;
+            }
+            else{
+                height_r=0;
+                order_r=0;
+            }
+            height=max(height_l, height_r)+1;
+            order=order_l+order_r+multi;
+        }
+        BST_node<U>* balance(BST_node<U>* parent){ //平衡以此節點為根的子樹，條件為在原本已經平衡的狀態下最多插入或刪除一個node且左右子樹已經都平衡。回傳此子樹的新的根
+            int height_l=get_left_height();
+            int height_r=get_right_height();
+            if(height_l-height_r>1){
+                auto ptr_L=left;
+                int height_ll=ptr_L->get_left_height();
+                int height_lr=ptr_L->get_right_height();
+                if(height_ll>height_lr){ //左左
+                    auto ptr_LL=ptr_L->left;
+                    if(parent){
+                        if(parent->left==this) parent->left=ptr_L;
+                        else parent->right=ptr_L;
+                    }
+                    left=ptr_L->right;
+                    ptr_L->right=this;
+                    renew();
+                    ptr_L->renew();
+                    return ptr_L;
+                }
+                else{ //左右
+                    auto ptr_LR=ptr_L->right;
+                    if(parent){
+                        if(parent->left==this) parent->left=ptr_LR;
+                        else parent->right=ptr_LR;
+                    }
+                    ptr_L->right=ptr_LR->left;
+                    left=ptr_LR->right;
+                    ptr_LR->left=ptr_L;
+                    ptr_LR->right=this;
+                    ptr_L->renew();
+                    renew();
+                    ptr_LR->renew();
+                    return ptr_LR;
+                }
+            }
+            if(height_r-height_l>1){
+                auto ptr_R=right;
+                int height_rl=ptr_R->get_left_height();
+                int height_rr=ptr_R->get_right_height();
+                if(height_rl<height_rr){ //右右
+                    auto ptr_RR=ptr_R->right;
+                    if(parent){
+                        if(parent->left==this) parent->left=ptr_R;
+                        else parent->right=ptr_R;
+                    }
+                    right=ptr_R->left;
+                    ptr_R->left=this;
+                    renew();
+                    ptr_R->renew();
+                    return ptr_R;
+                }
+                else{ //右左
+                    auto ptr_RL=ptr_R->left;
+                    if(parent){
+                        if(parent->left==this) parent->left=ptr_RL;
+                        else parent->right=ptr_RL;
+                    }
+                    ptr_R->left=ptr_RL->right;
+                    right=ptr_RL->left;
+                    ptr_RL->left=this;
+                    ptr_RL->right=ptr_R;
+                    renew();
+                    ptr_R->renew();
+                    ptr_RL->renew();
+                    return ptr_RL;
+                }
+            }
+            return this;
+        }
+        BST_node<U>* insert_val(U num, BST_node<U>* parent){ //將val插入此AVL-tree中並保持平衡，回傳新的根
+            if(num==val){
+                multi++;
+                order++;
+                return this;
+            }
+            if(num<val){
+                if(!left) left=new BST_node<U>(num);
+                else left->insert_val(num, this);
+            }
+            else{
+                if(!right) right=new BST_node<U>(num);
+                else right->insert_val(num, this);
+            }
+            //平衡與更新
+            auto new_ptr=balance(parent);
+            if(new_ptr==this){
+                renew();
+                return this;
+            } 
+            else{
+                return new_ptr;
+            }
+        }   
+        BST_node<U>* insert_val(U num){
+            return insert_val(num, nullptr);
+        }
+        int get_exrank(U target){ //求出target在此子樹中大於多少元素
+            if(val>target) return left? left->get_exrank(target) : 0;
+            int hint=left? left->order : 0;
+            if(val==target) return hint;
+            hint+=multi;
+            return right? hint+right->get_exrank(target) : hint;
+        }
+        int get_inrank(U target){ //求出target在此子樹中大於等於多少元素
+            if(val>target) return left? left->get_inrank(target) : 0;
+            int hint=left? left->order : 0;
+            hint+=multi;
+            if(val==target) return hint;
+            return right? hint+right->get_inrank(target) : hint;
+        }
+        U get_kth_largest(int k){ //求出第k大的數，使用條件為至少有k個數
+            int order_r=right? right->order : 0;
+            if(order_r>=k) return right->get_kth_largest(k);
+            if(order_r+multi>=k) return val;
+            return left->get_kth_largest(k-order_r-multi);
+        }
+        U get_kth_smallest(int k){ //求出第k小的數，使用條件為至少有k個數
+            int order_l=left? left->order : 0;
+            if(order_l>=k) return left->get_kth_smallest(k);
+            if(order_l+multi>=k) return val;
+            return right->get_kth_smallest(k-order_l-multi);
+        }
+    };
+    BST_node<T>* root;
+public:
+    my_multiset(){
+        root=nullptr;
+    }
+    void insert(T num){
+        if(!root) root=new BST_node<T>(num);
+        else root=root->insert_val(num);
+    }
+    int size(){
+        if(!root) return 0;
+        return root->order;
+    }
+    int count(T num){
+        auto ptr=root;
+        while(ptr){
+            if(ptr->val>num) ptr=ptr->left;
+            else if(ptr->val<num) ptr=ptr->right;
+            else return ptr->multi;
+        }
+        return 0;
+    }
+    int get_inrank(T num){
+        if(!root) return 0;
+        return root->get_inrank(num);
+    }
+    int get_exrank(T num){
+        if(!root) return 0;
+        return root->get_exrank(num);
+    }
+    T get_kth_largest(int k){
+        return root->get_kth_largest(k);
+    }
+    T get_kth_smallest(int k){
+        return root->get_kth_smallest(k);
+    }
+};

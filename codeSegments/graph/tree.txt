@@ -1,0 +1,196 @@
+class tree { //AI-generated, necessary: vector, deque, functional
+    int N;
+    vector<vector<int>> neighbor;
+    vector<int> depth;
+    vector<int> order;
+    pair<int, int> center;
+    vector<pair<int, int>> seg_rep;
+    int diameter;
+public:
+    // 透過 input 讀入 n-1 條邊，點號從 diff 開始編號（轉換為 0-based）
+    tree(istream &input, int n, int diff = 0) {
+        N = n;
+        neighbor.resize(n);
+        for (int i = 0; i < n - 1; i++) {
+            int u, v;
+            input >> u >> v;
+            u -= diff; v -= diff;
+            neighbor[u].push_back(v);
+            neighbor[v].push_back(u);
+        }
+    }
+    
+    // 透過 edges 給定 n-1 條邊，點號從 diff 開始編號（轉換為 0-based）
+    tree(int n, const vector<vector<int>> &edges, int diff = 0) {
+        N = n;
+        neighbor.resize(n);
+        for (auto &edge : edges) {
+            int u = edge[0] - diff;
+            int v = edge[1] - diff;
+            neighbor[u].push_back(v);
+            neighbor[v].push_back(u);
+        }
+    }
+    
+    // 以 root 為根，利用 DFS 計算各點的深度，結果存入 depth
+    void init_depth(int root = 0) {
+        depth.assign(N, -1);
+        function<void(int, int, int)> dfs = [&](int node, int parent, int d) {
+            depth[node] = d;
+            for (int nxt : neighbor[node]) {
+                if (nxt == parent) continue;
+                dfs(nxt, node, d + 1);
+            }
+        };
+        dfs(root, -1, 0);
+    }
+    
+    // 以 root 為根，利用 DFS 計算每個節點的子樹大小，結果存入 order
+    void init_order(int root = 0) {
+        order.assign(N, 0);
+        function<int(int, int)> dfs = [&](int node, int parent) -> int {
+            int cnt = 1;
+            for (int nxt : neighbor[node]) {
+                if (nxt == parent) continue;
+                cnt += dfs(nxt, node);
+            }
+            order[node] = cnt;
+            return cnt;
+        };
+        dfs(root, -1);
+    }
+    
+    // 以 BFS 找出從 node 出發最遠的距離，以及所有達到此距離的節點
+    pair<int, vector<int>> farthest_node(int node) {
+        vector<int> dist(N, -1);
+        queue<int> q;
+        dist[node] = 0;
+        q.push(node);
+        while (!q.empty()) {
+            int cur = q.front();
+            q.pop();
+            for (int nxt : neighbor[cur]) {
+                if (dist[nxt] == -1) {
+                    dist[nxt] = dist[cur] + 1;
+                    q.push(nxt);
+                }
+            }
+        }
+        int maxd = 0;
+        for (int i = 0; i < N; i++) {
+            if (dist[i] > maxd)
+                maxd = dist[i];
+        }
+        vector<int> farthest;
+        for (int i = 0; i < N; i++) {
+            if (dist[i] == maxd)
+                farthest.push_back(i);
+        }
+        return {maxd, farthest};
+    }
+    
+    vector<int> find_path(int start, int end) {
+        vector<int> parent(N, -1);
+        parent[end] = end;
+        deque<int> q;
+        q.push_back(end);
+        
+        while (!q.empty()) {
+            int curr = q.front();
+            q.pop_front();
+            if (curr == start)
+                break;
+            for (int nxt : neighbor[curr]) {
+                if (parent[nxt] == -1) {  // 未拜訪過
+                    parent[nxt] = curr;
+                    q.push_back(nxt);
+                }
+            }
+        }
+        
+        if (parent[start] == -1)
+            return {};
+        
+        vector<int> path;
+        for (int cur = start; cur != end; cur = parent[cur])
+            path.push_back(cur);
+        path.push_back(end);
+        return path;
+    }
+    void init_center() {
+        if (N == 0) return; 
+        vector<int> degree(N, 0);
+        deque<int> leaves;
+        for (int i = 0; i < N; i++) {
+            degree[i] = neighbor[i].size();
+            if (degree[i] <= 1)
+                leaves.push_back(i);
+        }
+    
+        int remaining = N;
+        int round = 0;
+        // 逐層去除葉節點，直到剩下 1 或 2 個節點
+        while (remaining > 2) {
+            ++round;
+            int leafCount = leaves.size();
+            remaining -= leafCount;
+            for (int i = 0; i < leafCount; i++) {
+                int leaf = leaves.front();
+                leaves.pop_front();
+                // 更新所有相鄰節點的度數
+                for (int adj : neighbor[leaf]) {
+                    degree[adj]--;
+                    if (degree[adj] == 1)
+                        leaves.push_back(adj);
+                }
+            }
+        }
+
+        if (leaves.size() == 1) {
+            center = {leaves[0], -1};
+            diameter = round * 2;
+        }
+        else {
+            center = {leaves[0], leaves[1]};
+            diameter = round * 2 + 1;
+        }
+    }
+    
+    pair<int, int> get_center() {
+        return center;
+    }
+    
+    void init_seg_rep(int root = 0) {
+        seg_rep.resize(N);
+        int counter = 0;
+        function<void(int, int)> generate_seg_rep = [&](int node, int parent) {
+            seg_rep[node].first = counter;
+            for(int x:neighbor[node]) {
+                if(x != parent) {
+                    ++counter;
+                    generate_seg_rep(x, node);
+                }
+            }
+            seg_rep[node].second = counter;
+        };
+        generate_seg_rep(0, -1);
+    }
+    pair<int, int> get_seg_rep(int node) {
+        return seg_rep[node];
+    }
+    int get_diameter() {
+        return diameter;	
+    }
+    
+    int get_depth(int node) {
+        return depth[node];
+    }
+    
+    int get_order(int node) {
+        return order[node];	
+    }
+    
+    const vector<int>& get_neighbor(int node) const {
+        return neighbor[node];
+    }
+};

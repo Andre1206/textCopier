@@ -1,0 +1,32 @@
+#include<iostream>
+#include<iomanip> //for cout << setprecision(n)
+#include<algorithm> //for sort and something useful
+#include<vector>
+#include<queue> //for priority queue
+#include<deque> //for deque
+#include<string>
+#include<numeric> //for gcd/min/max
+#include<cmath> //for sqrt
+#include<sstream> //for stringstream
+#include<unordered_set>
+#include<unordered_map>
+#include<set>
+#include<map>
+#include<climits> //for INT_MAX
+#include<bitset> //for bitset
+#include<functional>
+
+using namespace std;
+const double pi=3.14159265358979;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    //以上為輸入輸出流速度優化
+    int n_testcase;
+    cin >> n_testcase;
+    for(int abc=0;abc<n_testcase;abc++){
+        //normally code goes here
+    }
+    return 0;
+}

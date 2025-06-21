@@ -1,0 +1,50 @@
+class DS{
+    int N;
+    int* arr;
+    int* deg;
+    int ancestor(int a){
+        if(a==arr[a]) return a;
+        return arr[a]=ancestor(arr[a]); //compression
+    }
+    public:
+    DS(int n){
+        N=n;
+        arr=new int[n];
+        deg=new int[n];
+        iota(arr, arr+n, 0);
+        fill(deg, deg+n, 1);
+        /*for(int i=0;i<n;i++)
+            arr[i]=i;
+        for(int i=0;i<n;i++)
+            deg[i]=1;*/
+    }
+    bool sameset(int a, int b){
+        int pa=ancestor(a);
+        int pb=ancestor(b);
+        return pa==pb;
+    }
+    bool merge(int a, int b){ //回傳是否有效merge兩個原本不同的，若有則回傳true
+        int pa=ancestor(a);
+        int pb=ancestor(b);
+        if(pa!=pb){
+            if(deg[pa]<deg[pb]){
+                arr[pa]=pb;
+                deg[pb]+=deg[pa];
+            }
+            else{
+                arr[pb]=pa;
+                deg[pa]+=deg[pb];
+            }
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    int get_ancestor(int a){
+        return ancestor(a);
+    }
+    int get_degree(int a){
+        return deg[ancestor(a)];
+    }
+};

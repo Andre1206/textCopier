@@ -1,0 +1,105 @@
+template<class T, T F(T a, T b)> class range_query_DBIT{
+    int length;
+    vector<T> BIT;
+    vector<T> invBIT;
+    inline int lowBit(int x){
+        return x&(-x);
+    }
+    T id;
+    public:
+    range_query_DBIT(const vector<T>& arr, const T& ID): id(ID), invBIT(arr){
+        length=arr.size();
+        BIT.push_back(id);
+        BIT.insert(BIT.end(), arr.begin(), arr.end());
+        invBIT.push_back(id);
+        for(int step=1;step<=length;step*=2){
+            for(int i=step*2;i<=length;i+=step*2){
+                BIT[i]=F(BIT[i-step], BIT[i]);
+            }
+        }
+        for(int step=1;step<=length;step*=2){
+            for(int i=step;i<=length;i+=step*2){
+                invBIT[i-step]=F(invBIT[i-step], invBIT[i]);
+            }
+        }
+    }
+    range_query_DBIT(const T& ID): id(ID){
+        length=0;
+        BIT.push_back(id);
+        invBIT.push_back(id);
+    }
+    void renew(int index, const T& val){
+        ++index;
+        T prev(val);
+        int m;
+        for(m=1;m<=length;m*=2){
+            if(index&m){
+                if(m==1){
+                    BIT[index]=val;
+                }
+                else{
+                    int y=index-m/2;
+                    if(y<=length){
+                        prev=F(BIT[y], invBIT[y]);
+                    } //else prev=prev;
+                    if(index<=length){
+                        BIT[index]=prev;
+                    }
+                }
+                index+=m;
+            }
+            else{
+                if(m==1){
+                    invBIT[index-1]=val;
+                }
+                else{
+                    int y=index-m/2;
+                    if(y<=length){
+                        prev=F(BIT[y], invBIT[y]);
+                    }
+                    invBIT[index-m]=prev;
+                }
+            }
+        }
+        m/=2;
+        invBIT[0]=F(BIT[m], invBIT[m]);
+    }
+    T S(int index){ //限制：index>=0;
+        ++index;
+        T ans=BIT[index];
+        index-=lowBit(index);
+        while(index>0){
+            ans=ADD(BIT[index], ans);
+            index-=lowBit(index);
+        }
+        return ans;
+    }
+    T S(int index_L, int index_R){
+        ++index_R;
+        T left=id;
+        T right=id;
+        if(index_L>0){
+            while(index_L+lowBit(index_L)<=index_R){
+                left=F(left, invBIT[index_L]);
+                index_L=index_L+lowBit(index_L);
+            }
+        }
+        while(index_R>index_L){
+            right=F(BIT[index_R], right);
+            index_R&=(index_R-1);
+        }
+        return index_L==0? right:F(left, right);
+    }
+    T operator [](int index){
+        if(index&1){
+            return invBIT[index];
+        }
+        return BIT[index+1];
+    }
+    int size(){
+        return length;
+    }
+    void push_back(const T& val){ //not yet implement
+    }
+    //tester: problem 307
+};

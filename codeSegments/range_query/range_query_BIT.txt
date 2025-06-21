@@ -1,0 +1,94 @@
+template<class T, T ADD(T a, T b), T SUB(T a, T b)> class range_query_BIT{
+    int length;
+    vector<T> content;
+    vector<T> BIT;
+    T id;
+    int lowBit(int x){
+        return x&(-x);
+    }
+    class reference_proxy {
+        range_query_BIT* tree;
+        long long index;
+    public:
+        reference_proxy(range_query_BIT* t, long long i) : tree(t), index(i) {}
+        reference_proxy& operator=(const T& val) {
+            tree->renew(index, val);
+            return *this;
+        }
+        reference_proxy& operator+=(const T& val) {
+            tree->increment(index, val);
+            return *this;
+        }
+        operator T() const {
+            return tree->content[index];
+        }
+    };
+    public:
+    range_query_BIT(const vector<T>& arr, const T& ID = T()) : content(arr), id(ID){
+        length=arr.size();
+        BIT.push_back(id);
+        BIT.insert(BIT.end(), arr.begin(), arr.end());
+        for(int step = 1; step <= length; step *= 2){
+            for(int i = step*2; i <= length; i += step * 2){
+                BIT[i] = ADD(BIT[i - step], BIT[i]);
+            }
+        }
+    }
+    range_query_BIT(const T& ID = T()) : id(ID){
+        length = 0;
+        BIT.push_back(id);
+    }
+    void renew(int index, const T& val){
+        T diff = SUB(val, content[index]);
+        content[index] = val;
+        ++index;
+        while(index <= length){
+            BIT[index] = ADD(BIT[index], diff);
+            index += lowBit(index);
+        }
+    }
+    void increment(int index, const T& val){
+        content[index] = ADD(content[index], val);
+        ++index;
+        while(index <= length){
+            BIT[index] = ADD(BIT[index], val);
+            index += lowBit(index);
+        }
+    }
+    T S(int index){ //限制：index>=0;
+        ++index;
+        T ans = BIT[index];
+        index -= lowBit(index);
+        while(index > 0){
+            ans = ADD(BIT[index], ans);
+            index -= lowBit(index);
+        }
+        return ans;
+    }
+    T S(int index_L, int index_R){
+        if(index_L == 0){
+            return S(index_R);
+        }
+        else{
+            return SUB(S(index_R), S(index_L-1));
+        }
+    }
+    reference_proxy operator [](int index){
+        return reference_proxy(this, index);
+    }
+    int size(){
+        return length;
+    }
+    void push_back(const T& val){
+        int index = length++;
+        int target = length - lowBit(length);
+        T ans(val);
+        while(index>target){
+            ans = ADD(BIT[index], ans);
+            index -= lowBit(index);
+        }
+        BIT.push_back(ans);
+        content.push_back(val);
+    }
+    //tester: problem 307
+};

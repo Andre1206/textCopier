@@ -1,0 +1,92 @@
+template<class T, T F(T a, T b), class U, U F_U(U a, U b), T G(T a, U b, int l, int r)> class range_query_LPST{ //lazy propagation segment tree
+    private:
+    inline int mid(int a, int b){
+        return (a+b)>>1;
+    }
+    class node{
+        public:
+        T val;
+        U tag;
+        int L;
+        int R;
+        node* left;
+        node* right;
+        node(T a, U x, int b, int c) : val(a), tag(x), L(b), R(c), left(nullptr), right(nullptr){
+        }
+        node(T a, U x, int b, int c, node* d, node* e) : val(a), tag(x), L(b), R(c), left(d), right(e){
+        }
+    };
+    node* root;
+    U id_U;
+    void update_node(node* ptr, U inc_tag){
+        ptr->val=G(ptr->val, inc_tag, ptr->L, ptr->R);
+        ptr->tag=F_U(ptr->tag, inc_tag);
+    }
+    void split_tag(node* ptr){
+        if(ptr->tag!=id_U){
+            update_node(ptr->left, ptr->tag);
+            update_node(ptr->right, ptr->tag);
+            ptr->tag=id_U;
+        }
+    }
+    public:
+    range_query_LPST(const vector<T>& a, const U& id){
+        function<node*(int, int)> initialize=[&](int l, int r){
+            if(l==r){
+                return new node(a[l], id, l, r);
+            }
+            node* ptr_l=initialize(l, mid(l, r));
+            node* ptr_r=initialize(mid(l, r)+1, r);
+            return new node(F(ptr_l->val, ptr_r->val), id, l, r, ptr_l, ptr_r);
+        };        
+        id_U=id;
+        root=initialize(0, a.size()-1);
+    }
+    T S(int a, int b){
+        if(a>b){
+            cout << "S(a,b) is called when a=" << a << ">" << b << "=b" << endl;
+            return T();
+        }
+        function<T(node*, int, int)> solve=[&](node* ptr, int index_l, int index_r){
+            if(ptr->L==index_l && ptr->R==index_r){
+                return ptr->val;
+            }
+            split_tag(ptr);
+            int m=mid(ptr->L, ptr->R);
+            if(index_l>m){
+                return solve(ptr->right, index_l, index_r);
+            }
+            if(index_r<=m){
+                return solve(ptr->left, index_l, index_r);
+            }
+            return F(solve(ptr->left, index_l, m), solve(ptr->right, m+1, index_r) );
+        };
+        return solve(root, a, b);
+    }
+    void range_op(U inc_val, int l, int r){
+        function<void(node*, int, int)> solve=[&](node* ptr, int index_l, int index_r){
+            if(ptr->L==index_l && ptr->R==index_r){
+                update_node(ptr, inc_val);
+                return;
+            }
+            split_tag(ptr);
+            int m=mid(ptr->L, ptr->R);
+            if(index_l>m){
+                solve(ptr->right, index_l, index_r);
+            }
+            else if(index_r<=m){
+                solve(ptr->left, index_l, index_r);
+            }
+            else{
+                solve(ptr->left, index_l, m);
+                solve(ptr->right, m+1, index_r);
+            }
+            ptr->val=F(ptr->left->val, ptr->right->val);
+        };
+        solve(root, l, r);
+    }
+    T operator [](int index){
+        return S(index, index);
+    }
+};
+//tester: CSES Range Updates and Sums, ABC 382F

@@ -1,0 +1,144 @@
+typedef enum {
+    FOUR_DIR,
+    EIGHT_DIR
+} neighbor_t;
+
+template<class T> class board{
+    int H;
+    int W;
+    vector<vector<T>> content;
+    neighbor_t neighbor_type;
+    public:
+    board(const vector<vector<T>>& b, neighbor_t type = FOUR_DIR) : content(b){
+        H = b.size();
+        if(H > 0) W = b[0].size();
+        neighbor_type = type;
+    }
+    board(int h, int w, const T& val, neighbor_t type = FOUR_DIR) : content(h, vector<T>(w, val)){
+        H = h;
+        W = w;
+        neighbor_type = type;
+    }
+    board(istream &input, int h, int w, neighbor_t type = FOUR_DIR) : content(h, vector<T>(w)) {
+        H = h;
+        W = w;
+        neighbor_type = type;
+        for(int i = 0; i < h; ++i) {
+            for(int j = 0; j < w; ++j) {
+                input >> content[i][j];
+            }
+        }
+    }
+    bool in(const pair<int, int>& pos) const {
+        return pos.first>=0 && pos.first<H && pos.second>=0 && pos.second<W;
+    }
+    const T& operator [](const pair<int, int>& pos) const {
+        if (!in(pos)) throw runtime_error("Error: out of bound.");
+        return content[pos.first][pos.second];
+    }
+    T& operator [](const pair<int, int>& pos) {
+        if (!in(pos)) throw runtime_error("Error: out of bound.");
+        return content[pos.first][pos.second];
+    }
+    const vector<T>& operator [](const int index) const {
+        if(index < 0 || index >= H) throw runtime_error("Error: out of bound.");
+        return content[index];
+    }
+    vector<T>& operator [](const int index) {
+        if(index < 0 || index >= H) throw runtime_error("Error: out of bound.");
+        return content[index];
+    }
+    vector<pair<int, int>> get_neighbor(const pair<int, int>& pos) const {
+        const int dx[8] = {1, -1, 0, 0, 1, 1, -1, -1};
+        const int dy[8] = {0, 0, 1, -1, 1, -1, 1, -1};
+        vector<pair<int, int>> ans;
+        int bound = 0;
+        switch(neighbor_type) {
+            case FOUR_DIR:
+                bound = 4;
+                break;
+            case EIGHT_DIR:
+                bound = 8;
+                break;
+        }
+        for(int i = 0; i < bound; ++i) {
+            pair<int, int> new_pos={pos.first+dx[i], pos.second+dy[i]};
+            if(in(new_pos)) ans.push_back(new_pos);
+        }
+        return ans;
+    }
+    vector<pair<pair<int, int>, string>> get_directed_neighbor(const pair<int, int>& pos) const {
+        const int dx[8] = {1, -1, 0, 0, 1, 1, -1, -1};
+        const int dy[8] = {0, 0, 1, -1, 1, -1, 1, -1};
+        const string dir[8] = {"D", "U", "R", "L", "BR", "BL", "TR", "TL"}; // top/bottom right/left
+        vector<pair<pair<int, int>, string>> ans;
+        int bound = 0;
+        switch(neighbor_type) {
+            case FOUR_DIR:
+                bound = 4;
+                break;
+            case EIGHT_DIR:
+                bound = 8;
+                break;
+        }
+        for(int i = 0; i < bound; ++i) {
+            pair<int, int> new_pos={pos.first+dx[i], pos.second+dy[i]};
+            if(in(new_pos)) ans.push_back({new_pos, dir[i]});
+        }
+        return ans;
+    }
+    template<typename predicate>
+    board<char> get_source_directing(const vector<pair<int, int>>& source, predicate can_go, const string DURL = "DURL") const {
+    //currently only support 4-dir
+        board<char> ans(H, W, '.');
+        board<int> dist(H, W, -1);
+        const int dx[4] = {-1, 1, 0, 0}; //和DURL反向
+        const int dy[4] = {0, 0, -1, 1}; //和DURL反向
+        deque<pair<int, int>> Q;
+        for(auto p:source) {
+            Q.push_back(p);
+            dist[p] = 0;
+        }
+        while(!Q.empty()){
+            auto pos = Q.front();
+            Q.pop_front();
+            for(int i = 0; i < 4; ++i) {
+                pair<int, int> p = {pos.first + dx[i], pos.second + dy[i]};
+                if(in(p) && can_go(content[p.first][p.second]) && dist[p] == -1) {
+                    dist[p] = dist[pos] + 1;
+                    ans[p] = DURL[i];
+                    Q.push_back(p);
+                }
+            }
+        }
+        return ans;
+    }
+    vector<pair<int, int>> find(const T& val) const {
+        vector<pair<int, int>> ans;
+        for(int i = 0; i < H; ++i) {
+            for(int j = 0; j < W; ++j) {
+                if(content[i][j] == val) {
+                    ans.push_back({i, j});
+                }
+            }
+        }
+        return ans;
+    }
+    void set_val(const pair<int, int>& pos, const T& val) {
+        if(!in(pos)) throw runtime_error("Error: out of bound.");
+        content[pos.first][pos.second] = val;
+    }
+    vector<vector<T>> get_board() const {
+        return content;
+    }
+    pair<int, int> size() const {
+        return {H, W};
+    }
+}; //tester: LeetCode 529, ABC 405D
+//TODO
+//695. Max Area of Island
+//733. Flood Fill
+//778. Swim in Rising Water
+//1034. Coloring A Border
+//1091. Shortest Path in Binary Matrix
+//1293. Shortest Path in a Grid with Obstacles Elimination
