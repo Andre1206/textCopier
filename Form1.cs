@@ -17,6 +17,7 @@ namespace TextCopier
         {
             InitializeComponent();
         }
+        const string repo_loc = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\";
 
         private void fileToClipboard(string filePath)
         {
@@ -46,7 +47,7 @@ namespace TextCopier
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\graph\tree.txt";
+            string filePath = repo_loc + @"codeSegments\graph\tree.txt";
             fileToClipboard(filePath);
         }
 
@@ -72,7 +73,7 @@ namespace TextCopier
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\functions\print.txt";
+            string filePath = repo_loc + @"codeSegments\functions\print.txt";
             fileToClipboard(filePath);
         }
 
@@ -83,7 +84,7 @@ namespace TextCopier
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\functions\multiTestcases.txt";
+            string filePath = repo_loc + @"codeSegments\functions\multiTestcases.txt";
             fileToClipboard(filePath);
         }
 
@@ -94,67 +95,84 @@ namespace TextCopier
 
         private void button4_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\range_query\range_query_ST.txt";
+            string filePath = repo_loc + @"codeSegments\range_query\range_query_ST.txt";
             fileToClipboard(filePath);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\range_query\range_query_LPST.txt";
+            string filePath = repo_loc + @"codeSegments\range_query\range_query_LPST.txt";
             fileToClipboard(filePath);
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\range_query\range_query_BIT.txt";
+            string filePath = repo_loc + @"codeSegments\range_query\range_query_BIT.txt";
             fileToClipboard(filePath);
         }
 
         private void button8_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\range_query\range_query_DBIT.txt";
+            string filePath = repo_loc + @"codeSegments\range_query\range_query_DBIT.txt";
             fileToClipboard(filePath);
         }
 
         private void button9_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\disjoint_set\DS.txt";
+            string filePath = repo_loc + @"codeSegments\disjoint_set\DS.txt";
             fileToClipboard(filePath);
         }
 
         private void button10_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\disjoint_set\DS_map.txt";
+            string filePath = repo_loc + @"codeSegments\disjoint_set\DS_map.txt";
             fileToClipboard(filePath);
         }
 
         private void button11_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\disjoint_set\DS_vector.txt";
+            string filePath = repo_loc + @"codeSegments\disjoint_set\DS_vector.txt";
             fileToClipboard(filePath);
         }
 
         private void button12_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\my_multiset\my_multiset.txt";
+            string filePath = repo_loc + @"codeSegments\my_multiset\my_multiset.txt";
             fileToClipboard(filePath);
         }
 
         private void button13_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\number_theory\mint.txt";
+            string filePath = repo_loc + @"codeSegments\number_theory\mint.txt";
             fileToClipboard(filePath);
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\functions\board.txt";
+            string filePath = repo_loc + @"codeSegments\functions\board.txt";
             fileToClipboard(filePath);
         }
 
         private void button14_Click(object sender, EventArgs e)
         {
-            string filePath = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\codeSegments\range_query\range_query_DST.txt";
+            string filePath = repo_loc + @"codeSegments\range_query\range_query_DST.txt";
+            fileToClipboard(filePath);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            string filePath = repo_loc + @"codeSegments\functions\YesNo.txt";
+            fileToClipboard(filePath);
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            string filePath = repo_loc + @"codeSegments\functions\multiYesNo.txt";
             fileToClipboard(filePath);
         }
     }
