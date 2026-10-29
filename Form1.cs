@@ -17,7 +17,17 @@ namespace TextCopier
         {
             InitializeComponent();
         }
-        const string repo_loc = @"C:\Users\h0a4r\OneDrive\桌面\code_projects\TextCopier\";
+        private static readonly string CodeSegmentsDirectory =
+            Path.Combine(AppContext.BaseDirectory, "codeSegments");
+
+        private void codeSegmentToClipboard(params string[] relativePathParts)
+        {
+            string filePath = relativePathParts.Aggregate(
+                CodeSegmentsDirectory,
+                (currentPath, pathPart) => Path.Combine(currentPath, pathPart));
+
+            fileToClipboard(filePath);
+        }
 
         private void fileToClipboard(string filePath)
         {
@@ -47,8 +57,7 @@ namespace TextCopier
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\graph\tree.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("graph", "tree.txt");
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -73,8 +82,7 @@ namespace TextCopier
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\functions\print.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("functions", "print.txt");
         }
 
         private void msgTextBox_TextChanged(object sender, EventArgs e)
@@ -84,8 +92,7 @@ namespace TextCopier
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\functions\multiTestcases.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("functions", "multiTestcases.txt");
         }
 
         private void textBox6_TextChanged(object sender, EventArgs e)
@@ -95,68 +102,57 @@ namespace TextCopier
 
         private void button4_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\range_query\range_query_ST.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("range_query", "range_query_ST.txt");
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\range_query\range_query_LPST.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("range_query", "range_query_LPST.txt");
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\range_query\range_query_BIT.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("range_query", "range_query_BIT.txt");
         }
 
         private void button8_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\range_query\range_query_DBIT.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("range_query", "range_query_DBIT.txt");
         }
 
         private void button9_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\disjoint_set\DS.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("disjoint_set", "DS.txt");
         }
 
         private void button10_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\disjoint_set\DS_map.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("disjoint_set", "DS_map.txt");
         }
 
         private void button11_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\disjoint_set\DS_vector.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("disjoint_set", "DS_vector.txt");
         }
 
         private void button12_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\my_multiset\my_multiset.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("my_multiset", "my_multiset.txt");
         }
 
         private void button13_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\number_theory\mint.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("number_theory", "mint.txt");
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\functions\board.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("functions", "board.txt");
         }
 
         private void button14_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\range_query\range_query_DST.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("range_query", "range_query_DST.txt");
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -166,14 +162,12 @@ namespace TextCopier
 
         private void button15_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\functions\YesNo.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("functions", "YesNo.txt");
         }
 
         private void button16_Click(object sender, EventArgs e)
         {
-            string filePath = repo_loc + @"codeSegments\functions\multiYesNo.txt";
-            fileToClipboard(filePath);
+            codeSegmentToClipboard("functions", "multiYesNo.txt");
         }
     }
 }
